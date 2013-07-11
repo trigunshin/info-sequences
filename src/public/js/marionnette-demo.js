@@ -14,10 +14,7 @@ var VUser = Marionette.ItemView.extend({
 });
 
 var Group = Backbone.Model.extend({
-    defaults: {
-        field : null,
-        id : null
-    }
+    defaults: {}
 });
 var Groups = Backbone.Collection.extend({
     model: Group,
@@ -34,10 +31,7 @@ var VGroupsList = Marionette.CompositeView.extend({
 });
 
 var Bookmark = Backbone.Model.extend({
-    defaults: {
-        field : null,
-        id : null
-    }
+    defaults: {}
 });
 var Bookmarks = Backbone.Collection.extend({
     model: Bookmark,
@@ -54,7 +48,7 @@ var VBookmarksList = Marionette.CompositeView.extend({
 });
 
 var container = new Backbone.Marionette.Region({
-  el: "#container"
+  el: "#app-container"
 });
 
 var AppLayout = Backbone.Marionette.Layout.extend({
@@ -84,5 +78,89 @@ var AppLayout = Backbone.Marionette.Layout.extend({
 
 });
 
-var layout = new AppLayout();
-container.show(layout);
+//var layout = new AppLayout();
+//container.show(layout);
+
+MyApp = new Backbone.Marionette.Application();
+
+MyApp.addRegions({
+  mainRegion: "#content"
+});
+
+Villain = Backbone.Model.extend({});
+
+Villains = Backbone.Collection.extend({
+    model: Villain,
+});
+
+Hero = Backbone.Model.extend({});
+
+Heroes = Backbone.Collection.extend({
+    model: Hero,
+    url: "/api/group/"
+});
+
+VillainView = Backbone.Marionette.ItemView.extend({
+  template: "#villain-template",
+  tagName: "li",
+
+  events: {
+    'click li': 'logInfoUrl'
+  },
+
+  logInfoUrl: function(){
+    console.log(this.model.get('url'));
+  }
+});
+
+HeroView = Backbone.Marionette.CompositeView.extend({
+  template: "#accordion-group-template",
+  className: "accordion-group",
+  itemView: VillainView,
+  itemViewContainer: "ul",
+  events: {
+    'click a': 'logInfoUrl'
+  },
+  initialize: function(){
+    this.collection = this.model.get('bookmarks');
+  },
+  logInfoUrl: function(){
+    //console.log(this.model.get('url'));
+  }
+});
+
+AccordionView = Backbone.Marionette.CollectionView.extend({
+  id: "heroList",
+  className: "accordion",
+  itemView: HeroView
+});
+
+
+MyApp.addInitializer(function(options){
+    var heroes = new Heroes();
+    heroes.fetch({
+        success: function() {
+            // each hero's villains must be a backbone collection
+            // we initialize them here
+            heroes.each(function(hero){
+                var villains = hero.get('bookmarks');
+                var villainCollection = new Villains(villains);
+                hero.set('bookmarks', villainCollection);
+            });
+
+            var accordionView = new AccordionView({
+                collection: heroes
+            });
+            MyApp.mainRegion.show(accordionView);
+        }
+    });
+});
+
+MyApp.start();//{heroes: heroes});
+
+
+
+
+
+
+

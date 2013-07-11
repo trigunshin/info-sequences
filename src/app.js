@@ -27,20 +27,25 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/api/bookmark', bookmark.get);
+app.get('/api/bookmark', bookmark.list);
+app.get('/api/bookmark/:id', bookmark.get);
 app.post('/api/bookmark', bookmark.post);
-app.put('/api/bookmark', bookmark.put);
+app.put('/api/bookmark/:id', bookmark.put);
+app.delete('/api/bookmark/:id', bookmark.delete);
 
-app.get('/api/user', user.get);
+app.get('/api/user', user.list);
+app.get('/api/user/:id', user.get);
 app.post('/api/user', user.post);
-app.put('/api/user', user.put);
+app.put('/api/user/:id', user.put);
+app.delete('/api/user/:id', user.delete);
 
-app.get('/api/group', group.get);
+app.get('/api/group', group.list);
+app.get('/api/group/:id', group.get);
 app.post('/api/group', group.post);
-app.put('/api/group', group.put);
+app.put('/api/group/:id', group.put);
+app.delete('/api/group/:id', group.delete);
 
 app.get('/', routes.index);
-app.get('/users', user.list);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
