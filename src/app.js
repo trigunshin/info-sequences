@@ -4,6 +4,7 @@ var express = require('express')
   , bookmark = require('./routes/bookmark')
   , group = require('./routes/group')
   , http = require('http')
+  , dbmux = require("./db/dbmux")
   , path = require('path');
 
 var app = express();
@@ -26,6 +27,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
+
+user.set_dbmux(dbmux);
+group.set_dbmux(dbmux);
+bookmark.set_dbmux(dbmux);
 
 app.get('/api/bookmark', bookmark.list);
 app.get('/api/bookmark/:id', bookmark.get);

@@ -1,29 +1,39 @@
-
-/*
- * GET users listing.
- */
-
-exports.list = function(req, res){
-    res.json([
-        {email:"trigunshin@gmail.com", id: 1, field: 'derp'},
-        {field:"demo_text", id: 2},
-        {field:"demo_text", id: 3},
-        {field:"demo_text", id: 4}
-    ]);
+var dbmux;
+exports.set_dbmux = function(a_dbmux) {
+    dbmux = a_dbmux;
 };
 
-exports.get = function(req, res){
-    res.json({"field":"demo_text", 'id': req.query.id});
+exports.list = function(req, res) {
+    //TODO scope this to a user id, from session or otherwise
+    //var query = {user_id: req.query.user_id};
+    var query = {};
+    dbmux.users.get(query, function(err, user) {
+        if(err) throw err;
+        else res.json(user);
+    });
 };
 
-exports.post = function(req, res){
-    res.json({"field":"demo_text", id: req.query.id});
+exports.get = function(req, res) {
+    var query = {_id: req.query._id};
+    dbmux.users.get(query, function(err, user) {
+        if(err) throw err;
+        else res.json(user);
+    });
 };
 
-exports.put = function(req, res){
-    res.json({"field":"demo_text", id: req.query.id});
+exports.post = function(req, res) {
+    res.json({"field":"demo_group", _id: req.query._id});
 };
 
-exports.delete = function(req, res){
+exports.put = function(req, res) {
+    //TODO create user
+    //var user = {?};
+    dbmux.user.save(user, function(err, updated) {
+        if(err) throw err;
+        else res.json(updated);
+    });
+};
+
+exports.delete = function(req, res) {
     res.json();
 };

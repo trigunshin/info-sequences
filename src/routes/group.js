@@ -1,42 +1,39 @@
-var groupIds = [1,2];
-var groups = {
-    1: {"name": "generic_group",
-        'id': 1,
-        bookmarks: [
-            {id:1,url:'http://www.google.com'},
-            {id:2,url:'http://news.ycombinator.com'}
-        ]
-       },
-    2: {"name": "cats",
-       'id': 2,
-       bookmarks: [
-           {id:3,url:'http://www.reddit.com'},
-           {id:4,url:'http://www.reddit.com/r/cats'}
-       ]
-      }
+var dbmux;
+exports.set_dbmux = function(a_dbmux) {
+    dbmux = a_dbmux;
 };
 
-exports.list = function(req, res){
-    var ret = [];
-    for(var i=0,iLen=groupIds.length;i<iLen;i++) {
-        ret.push(groups[groupIds[i]]);
-    }
-    console.log(JSON.stringify(ret));
-    res.json(ret);
+exports.list = function(req, res) {
+    //TODO scope this to a user id, from session or otherwise
+    //var query = {user_id: req.query.user_id};
+    var query = {};
+    dbmux.groups.get(query, function(err, groups) {
+        if(err) throw err;
+        else res.json(groups);
+    });
 };
 
-exports.get = function(req, res){
-    res.json({"field":"demo_group", id: req.query.id});
+exports.get = function(req, res) {
+    var query = {_id: req.query._id};
+    dbmux.groups.get(query, function(err, group) {
+        if(err) throw err;
+        else res.json(group);
+    });
 };
 
-exports.post = function(req, res){
-    res.json({"field":"demo_group", id: req.query.id});
+exports.post = function(req, res) {
+    res.json({"field":"demo_group", _id: req.query._id});
 };
 
-exports.put = function(req, res){
-    res.json({"field":"demo_group", id: req.query.id});
+exports.put = function(req, res) {
+    //TODO create group
+    //var group = {?};
+    dbmux.groups.save(group, function(err, updated) {
+        if(err) throw err;
+        else res.json(updated);
+    });
 };
 
-exports.delete = function(req, res){
-  res.json();
+exports.delete = function(req, res) {
+    res.json();
 };
