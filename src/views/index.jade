@@ -3,36 +3,21 @@ extends layout
 block content
 
   script(type="text/template",id="bookmark-template")
-    <%= url %>
+    <%= url %> <span class='btn btn-small btn-danger bookmark__delete'>delete</span>
   script(type="text/template",id="accordion-group-template").
     <div class="accordion-heading">
       <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
+      <div class="row">
+      <span class='offset1 btn btn-small btn-danger group__delete'>delete</span>
+      </div>
     </div>
     <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
       <div class="accordion-inner">
+        <button id="bookmark_add" class="btn btn-small">Add Bookmark</button>
+        <hr>
         <ul>
-
-
-  script(type="text/template",id="infoTpl")
-    <p><strong>Email:</strong> <%= email %></p>
-    <p><%= _id %></p>
-  script(type="text/template",id="group__row")
-    <p><strong>field:</strong> <%= field %></p>
-    <p>id: <%= _id %></p>
-  script(type="text/template",id="groups__list")
-    <h2>Groups</h2>
-    <ul></ul>
-  script(type="text/template",id="bookmark__row")
-    <p><strong>field:</strong> <%= field %></p>
-    <p>id: <%= _id %></p>
-  script(type="text/template",id="bookmarks__list")
-    <h2>Bookmarks</h2>
-    <ol></ol>
-  script(type="text/template",id="layout-template")
-      <div id="user"></div>
-      <div id="groups"></div>
-      <div id="bookmarks"></div>
   .container
     h1= title
     p Welcome to #{title}
+    button#group_add.btn.btn-small Add Group
     #content

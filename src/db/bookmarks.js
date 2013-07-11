@@ -44,14 +44,27 @@ var save = function(bookmark, callback) {
 var findAndUpdate = function(query, fields, callback) {
     getCollection(function(err, collection) {
         if(err) return callback(err);
-        collection.findAndModify(query,
-                                 [],
-                                 {"$set":fields},
-                                 {"new":true},
-                                 function(err, result) {
-                                     if(err) return callback(err);
-                                     return callback(null, result);
-                                 });
+        if(query._id) query._id = new BSON.ObjectID(query._id);
+        collection.findAndModify(
+            query,
+            [],
+            {"$set":fields},
+            {"new":true},
+            function(err, result) {
+                if(err) return callback(err);
+                return callback(null, result);
+            });
+    });
+};
+
+exports.remove = function(query, callback) {
+    getCollection(function(err, collection) {
+        if(err) return callback(err);
+        if(query._id) query._id = new BSON.ObjectID(query._id);
+        collection.remove(query, function(err,  result) {
+            if(err) return callback(err);
+            callback(null, result);
+        });
     });
 };
 

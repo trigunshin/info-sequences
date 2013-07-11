@@ -33,22 +33,22 @@ group.set_dbmux(dbmux);
 bookmark.set_dbmux(dbmux);
 
 app.get('/api/bookmark', bookmark.list);
-app.get('/api/bookmark/:id', bookmark.get);
+app.get('/api/bookmark/:_id', bookmark.get);
 app.post('/api/bookmark', bookmark.post);
-app.put('/api/bookmark/:id', bookmark.put);
-app.delete('/api/bookmark/:id', bookmark.delete);
+app.put('/api/bookmark/:_id', bookmark.put);
+app.delete('/api/bookmark/:_id', bookmark.delete);
 
 app.get('/api/user', user.list);
-app.get('/api/user/:id', user.get);
+app.get('/api/user/:_id', user.get);
 app.post('/api/user', user.post);
-app.put('/api/user/:id', user.put);
-app.delete('/api/user/:id', user.delete);
+app.put('/api/user/:_id', user.put);
+app.delete('/api/user/:_id', user.delete);
 
 app.get('/api/group', group.list);
-app.get('/api/group/:id', group.get);
+app.get('/api/group/:_id', group.get);
 app.post('/api/group', group.post);
-app.put('/api/group/:id', group.put);
-app.delete('/api/group/:id', group.delete);
+app.put('/api/group/:_id', group.put);
+app.delete('/api/group/:_id', group.delete);
 
 app.get('/', routes.index);
 

@@ -14,7 +14,7 @@ exports.list = function(req, res) {
 };
 
 exports.get = function(req, res) {
-    var query = {_id: req.query._id};
+    var query = {_id: req.param('_id')};
     dbmux.users.get(query, function(err, user) {
         if(err) throw err;
         else res.json(user);
@@ -22,18 +22,30 @@ exports.get = function(req, res) {
 };
 
 exports.post = function(req, res) {
-    res.json({"field":"demo_group", _id: req.query._id});
-};
-
-exports.put = function(req, res) {
-    //TODO create user
-    //var user = {?};
-    dbmux.user.save(user, function(err, updated) {
+    dbmux.users.save(req.body, function(err, updated) {
         if(err) throw err;
-        else res.json(updated);
+        res.json(updated);
     });
 };
 
+exports.put = function(req, res) {
+    var query = {_id: req.param('_id')};
+    dbmux.users.findAndUpdate(
+        query,
+        req.body,
+        function(err, updated) {
+            if(err) throw err;
+            else res.json(updated);
+        }
+    );
+};
+
 exports.delete = function(req, res) {
-    res.json();
+    var query = {_id: req.param('_id')};
+    dbmux.users.remove(
+        query,
+        function(err, removed) {
+            res.json();
+        }
+    );
 };
