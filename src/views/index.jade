@@ -2,22 +2,45 @@ extends layout
 
 block content
 
-  script(type="text/template",id="bookmark-template")
-    <%= url %> <span class='btn btn-small btn-danger bookmark__delete'>delete</span>
-  script(type="text/template",id="accordion-group-template").
-    <div class="accordion-heading">
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
-      <div class="row">
-      <span class='offset1 btn btn-small btn-danger group__delete'>delete</span>
+  script(type="text/template",id="bookmark-template").
+    <div class="row">
+      <div class="span1"></div>
+      <a class="span1" href="<%= url %>"><%= url %></a>
+      <span class='btn btn-small btn-danger bookmark__delete'>delete</span>
+    </div>
+
+  script(type="text/template",id="row-accordion-template").
+    <div class="row">
+      <div class="accordion-heading row">
+        <a class="span2 accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
+        <span class="span2"><%= name %></span>
+        <span id="group_remove" class="offset1 btn btn-small btn-danger">Remove Group</span>
+      </div>
+      <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
+        <div class="accordion-inner">
+          <span id="bookmark_add" class="btn btn-small">Add Bookmark</span>
+          <ul id="bookmark_list" class="unstyled">
+          </ul>
+        </div>
       </div>
     </div>
-    <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
-      <div class="accordion-inner">
-        <button id="bookmark_add" class="btn btn-small">Add Bookmark</button>
-        <hr>
-        <ul>
+
+
+  script(type="text/template",id="row-template").
+    <div class="row">
+      <a href="#group<%= _id %>"><%= name %></a>
+      <span id="group_remove" class="offset1 btn btn-small btn-danger">Remove Group</span>
+    </div>
+  script(type="text/template",id="grid-template").
+    <div id="grid_list">
+      <div class="row">
+        <!--<span class="span2">Add a group.</span>-->
+        <div id="group_form"></div>
+        <span id="group_add" class="span1 btn btn-small">Add Group</span>
+      </div>
+    </div>
   .container
-    h1= title
-    p Welcome to #{title}
-    button#group_add.btn.btn-small Add Group
-    #content
+    div.row
+      h1= title
+      p Welcome to #{title}
+    #grid
