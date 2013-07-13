@@ -24,8 +24,7 @@ exports.get = function(req, res) {
 exports.post = function(req, res) {
     dbmux.bookmarks.save(req.body, function(err, updated) {
         if(err) throw err;
-        console.log("updated:"+JSON.stringify(updated[0]));
-        res.json(updated);
+        res.json(updated[0]);
     });
 };
 

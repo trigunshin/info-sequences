@@ -24,7 +24,7 @@ exports.get = function(req, res) {
 exports.post = function(req, res) {
     dbmux.users.save(req.body, function(err, updated) {
         if(err) throw err;
-        res.json(updated);
+        res.json(updated[0]);
     });
 };
 

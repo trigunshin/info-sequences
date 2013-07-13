@@ -24,7 +24,7 @@ exports.get = function(req, res) {
 exports.post = function(req, res) {
     dbmux.groups.save(req.body, function(err, updated) {
         if(err) throw err;
-        res.json(updated);
+        res.json(updated[0]);
     });
 };
 
@@ -45,7 +45,7 @@ exports.delete = function(req, res) {
     dbmux.groups.remove(
         query,
         function(err, removed) {
-            res.json();
+            res.json({});
         }
     );
 };
