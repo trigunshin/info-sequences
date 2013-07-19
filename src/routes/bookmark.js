@@ -6,7 +6,7 @@ exports.set_dbmux = function(a_dbmux) {
 exports.list = function(req, res) {
     //TODO scope this to a user id, from session or otherwise
     //var query = {user_id: req.query.user_id};
-    var query = {};
+    var query = {group_id: req.param('group_id')};
     dbmux.bookmarks.get(query, function(err, bookmarks) {
         if(err) throw err;
         else res.json(bookmarks);
