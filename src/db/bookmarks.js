@@ -20,7 +20,6 @@ var get = function(query, callback) {
     getCollection(function(err, collection) {
         if(err) return callback(err);
         if(query._id) query._id = new BSON.ObjectID(query._id);
-        if(query.group_id) query.group_id = new BSON.ObjectID(query.group_id);
         collection.find(query, {}, function(err, results) {
             if(err) return callback(err);
             results.toArray(function(err, items) {
