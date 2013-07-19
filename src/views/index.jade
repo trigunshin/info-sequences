@@ -2,6 +2,36 @@ extends layout
 
 block content
 
+  script(type="text/template",id="group-modal-template").
+    <a href="#createGroupModal" role="button" class="btn" data-toggle="modal">Add Group</a>
+    <div id="createGroupModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel",aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="formModalLabel">Create new group</h3>
+      </div>
+      <div id="group-modal-form" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button id="group-add-modal" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save changes</button>
+      </div>
+    </div>
+  script(type="text/template",id="bookmark-modal-template").
+    <a href="#createBookmarkModal-<%= group_id %>" role="button" class="btn" data-toggle="modal">Add Bookmark</a>
+    <div id="createBookmarkModal-<%= group_id %>" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel",aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="formModalLabel">Create new Bookmark</h3>
+      </div>
+      <div id="bookmark-modal-form-<%= group_id %>" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button id="bookmark-add-modal" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save Bookmark</button>
+      </div>
+    </div>
+
+  script(type="text/template",id="bookmark-layout-template").
+    <div id="bookmark-add-modal"></div>
+    <div id="bookmark-list"></div>
   script(type="text/template",id="bookmark-template").
     <div class="row">
       <div class="span1"></div>
@@ -9,38 +39,22 @@ block content
       <span class='btn btn-small btn-danger bookmark__delete'>delete</span>
     </div>
 
-  script(type="text/template",id="row-accordion-template").
-    <div class="row">
-      <div class="accordion-heading row">
-        <a class="span2 accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
-        <span class="span2"><%= name %></span>
-        <span id="group_remove" class="offset1 btn btn-small btn-danger">Remove Group</span>
-      </div>
-      <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
-        <div class="accordion-inner">
-          <span id="bookmark_add" class="btn btn-small">Add Bookmark</span>
-          <ul id="bookmark_list" class="unstyled">
-          </ul>
-        </div>
-      </div>
-    </div>
+  script(type="text/template",id="group-info-template").
+    <a class="span4 accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
+    <span id="group_remove" class="offset2 btn btn-small btn-danger">Remove Group</span>
+    <div id="remove_bookmark"></div>
 
-
-  script(type="text/template",id="row-template").
-    <div class="row">
-      <a href="#group<%= _id %>"><%= name %></a>
-      <span id="group_remove" class="offset1 btn btn-small btn-danger">Remove Group</span>
-    </div>
-  script(type="text/template",id="grid-template").
-    <div id="grid_list">
-      <div class="row">
-        <!--<span class="span2">Add a group.</span>-->
-        <div id="group_form"></div>
-        <span id="group_add" class="span1 btn btn-small">Add Group</span>
+  script(type="text/template",id="groups-layout-template").
+    <br>
+    <div id="group-info-view" class="accordion-heading row"></div>
+    <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
+      <div class="accordion-inner">
+        <ul id="group-bookmarks" class="unstyled"></ul>
       </div>
     </div>
   .container
     div.row
       h1= title
       p Welcome to #{title}
-    #grid
+    #add_group
+    #group_layout

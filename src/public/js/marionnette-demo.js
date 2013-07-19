@@ -1,4 +1,4 @@
-Bookmark = Backbone.Model.extend({
+var Bookmark = Backbone.Model.extend({
     idAttribute: '_id',
     //defaults: {url: 'default_url'},
     urlRoot: "/api/bookmark/",
@@ -7,27 +7,12 @@ Bookmark = Backbone.Model.extend({
         description: 'Text'
     }
 });
-Bookmarks = Backbone.Collection.extend({
+var Bookmarks = Backbone.Collection.extend({
     model: Bookmark,
     url: "/api/bookmark/"
 });
-
-Group = Backbone.Model.extend({
-    idAttribute: '_id',
-    urlRoot: "/api/group/",
-    schema: {
-        name: 'Text',
-        description: 'Text'
-    }
-});
-Groups = Backbone.Collection.extend({
-    model: Group,
-    url: "/api/group/"
-});
-
-BookmarkView = Backbone.Marionette.ItemView.extend({
+var BookmarkView = Backbone.Marionette.ItemView.extend({
     initialize: function() {
-        //when the model gets destroyed, remove the view
         this.listenTo(this.model, 'destroy', this.remove);
     },
     template: "#bookmark-template",
@@ -40,125 +25,171 @@ BookmarkView = Backbone.Marionette.ItemView.extend({
         this.model.destroy();
     }
 });
-
-
-GroupView = Backbone.Marionette.CompositeView.extend({
-    template: "#accordion-group-template",
-    className: "accordion-group",
+var BookmarksView = Backbone.Marionette.CollectionView.extend({
+    template: "#bookmark-list-template",
     itemView: BookmarkView,
-    itemViewContainer: "ul",
-    events: {
-        //'click span#bookmark_add': "addBookmark",
-    },
-    initialize: function(){
-        this.collection = this.model.get('bookmarks');
-    },
-    appendHtml: function(collectionView, itemView){
-        collectionView.$("ul").append(itemView.el);
-    },
+    initialize: function(){}
 });
-
-// A Grid Row (group-level)
-var GridRow = Backbone.Marionette.CompositeView.extend({
-    template: "#row-accordion-template",
+var BookmarkModalView = Backbone.Marionette.ItemView.extend({
     tagName: "div",
-    className: "grid_row",
-    itemView: BookmarkView,
-    itemViewContainer: "ul",
-
-    initialize: function(){
-        this.collection = this.model.get('bookmarks');
-    },
+    template: "#bookmark-modal-template",
     events: {
-        'click span#group_remove': 'removeGroup',
-        'click span#bookmark_add': "addBookmark"
+        'click button#bookmark-add-modal': 'addBookmark',
+        'click div#nothing': ''
     },
-    removeGroup: function(e) {
-        //XXX this leaves potential zombie bookmarks
-        this.model.destroy();
+    initialize: function(options) {
+        this.group_id = options.group_id;
+        this.bookmarks = options.bookmarks;
+        this.bookmark_form = options.bookmark_form;
     },
-    addBookmark: function() {
-        console.log("group id:"+this.model.get('_id'));
-        var cur = new Bookmark({url:'new url!', group_id:this.model.get('_id')});
-        this.collection.create(cur, {wait:true});
-        console.log("new_bookmark.save:"+JSON.stringify(this.collection));
-    }
-});
-
-// The grid view (group-level)
-var GridView = Backbone.Marionette.CompositeView.extend({
-    tagName: "div",
-    template: "#grid-template",
-    itemView: GridRow,
-
-    appendHtml: function(collectionView, itemView){
-        collectionView.$("div#grid_list").append(itemView.el);
-    },
-    events: {
-        'click span#group_add': 'addGroup',
-    },
-    addGroup: function(e) {
-        console.log("creating");
-        this.collection.create(
-            {name:"New Group N", description: "A new group!", _id: null},
+    addBookmark: function(e) {
+        var new_b = this.bookmark_form.getValue();
+        new_b.group_id = this.group_id;
+        this.bookmarks.create(
+            new_b,
             {wait: true}
         );
     }
 });
-/*
-MyApp = new Backbone.Marionette.Application();
-MyApp.addRegions({
-    mainRegion: "#content"
+var BookmarksLayout = Backbone.Marionette.Layout.extend({
+    template: "#bookmark-layout-template",
+    regions: {
+        bookmark_add_modal: "#bookmark-add-modal",
+        bookmark_list: "#bookmark-list"
+    }
 });
+///////////////////////////////////
+var Group = Backbone.Model.extend({
+    idAttribute: '_id',
+    urlRoot: "/api/group/",
+    schema: {
+        name: 'Text',
+        description: 'Text'
+    }
+});
+var Groups = Backbone.Collection.extend({
+    model: Group,
+    url: "/api/group/"
+});
+var GroupInfoView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+        this.listenTo(this.model, 'destroy', this.remove);
+    },
+    template: "#group-info-template",
+    tagName: "div",
+    events: {
+        'click span#group_remove': 'removeGroup'
+    },
+    removeGroup: function() {
+        console.log('removing group w/id:'+ this.model.get('_id'));
+        this.model.destroy();
+    }
+});
+var GroupModalView = Backbone.Marionette.ItemView.extend({
+    tagName: "div",
+    template: "#group-modal-template",
+    events: {
+        'click button#group-add-modal': 'addGroup',
+    },
+    addGroup: function() {
+        var new_group = this.group_form.getValue();
+        this.group_collection.create(
+            new_group,
+            {wait: true}
+        );
+    }
+});
+
+var renderGroupLayout = function(group_layout_view) {
+    var curModel = group_layout_view.model;
+    var group_id = curModel.get('_id');
+    var group_bookmarks = curModel.get('bookmarks');
+
+    var gView = new GroupInfoView({
+        model: curModel
+    });
+    group_layout_view.group_info.show(gView);
+
+    var gBookmarkLayout = new BookmarksLayout({
+        collection: group_bookmarks
+    });
+    var gBookmarkView = new BookmarksView({
+        collection: group_bookmarks
+    });
+
+    var cur_bookmark_form = new Backbone.Form({
+        model: new Bookmark({}),
+        idPrefix: 'bookmark-' + group_id + "-"
+    }).render();
+    var bModal = new BookmarkModalView({
+        group_id: group_id,
+        bookmarks: group_bookmarks,
+        bookmark_form: cur_bookmark_form,
+        model: new Backbone.Model({
+            group_id: group_id
+        })
+    });
+
+    group_layout_view.group_bookmarks.show(gBookmarkLayout);
+    gBookmarkLayout.bookmark_list.show(gBookmarkView);
+    gBookmarkLayout.bookmark_add_modal.show(bModal);
+    $('div#bookmark-modal-form-'
+      + group_id
+      + '.modal-body')
+    .append(cur_bookmark_form.el);
+};
+var GroupLayout = Backbone.Marionette.Layout.extend({
+    template: "#groups-layout-template",
+    regions: {
+        group_info: "#group-info-view",
+        group_bookmarks: "#group-bookmarks",
+    }
+});
+var GroupsView = Backbone.Marionette.CollectionView.extend({
+    itemView: GroupLayout,
+    onAfterItemAdded: function(itemView){
+        renderGroupLayout(itemView);
+    }
+});
+var MyApp = new Backbone.Marionette.Application();
+MyApp.addRegions({
+    group_layout: "#group_layout",
+    group_add_modal: "#add_group"
+});
+var setup_group_modal_view = function(app, groups_coll) {
+    var gModalView = new GroupModalView({});
+    gModalView.group_collection = groups_coll;
+    app.group_add_modal.show(gModalView);
+    var group_create_form = new Backbone.Form({
+        model: new Group({}),
+        idPrefix: 'group-'
+    }).render();
+    gModalView.group_form = group_create_form;
+    $('div#group-modal-form.modal-body').append(group_create_form.el);
+};
+var group_success = function group_success(groups_coll, response, options) {
+    console.log(groups_coll);
+    groups_coll.each(function(group){
+        var bmarks = new Bookmarks();
+        bmarks.fetch({
+            data: $.param({group_id: group.get('_id')})
+        });
+        group.set('bookmarks', bmarks);
+    });
+    var gCollectionView = new GroupsView({
+        collection: groups_coll
+    });
+    MyApp.group_layout.show(gCollectionView);
+
+    gCollectionView.children.each(function(group_layout_view) {
+        renderGroupLayout(group_layout_view);
+    });
+    setup_group_modal_view(MyApp, groups_coll);
+};
 MyApp.addInitializer(function(options){
     var groups = new Groups();
     groups.fetch({
-        success: function() {
-            // each group's bookmarks must be a backbone collection
-            groups.each(function(group){
-                bmarks = new Bookmarks();
-                bmarks.fetch({
-                    data: $.param({group_id: group._id})
-                });
-                var bookmarkCollection = bmarks;
-                //group.set('bookmarks', bmarks);
-            });
-
-            var accordionView = new AccordionView({
-                collection: groups
-            });
-            MyApp.mainRegion.show(accordionView);
-        }
+        success: group_success
     });
 });
 MyApp.start();
-//*/
-
-
-var groups = new Groups();
-groups.fetch({
-    success: function() {
-        var gridView = new GridView({
-            collection: groups
-        });
-        groups.each(function(group){
-            bmarks = new Bookmarks();
-            bmarks.fetch({
-                data: $.param({group_id: group.get('_id')})
-            });
-            var bookmarkCollection = bmarks;
-            group.set('bookmarks', bmarks);
-        });
-        gridView.render();
-
-
-        var form = new Backbone.Form({
-            model: new Group({}),
-            idprefix: 'group-'
-        }).render();
-
-        $('div#group_form').append(form.el);
-
-        $("#grid").html(gridView.el);
-    }
-});
