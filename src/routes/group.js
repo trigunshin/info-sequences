@@ -45,7 +45,7 @@ exports.delete = function(req, res) {
     dbmux.groups.remove(
         query,
         function(err, removed) {
-            res.json({});
+            res.json();
         }
     );
 };
