@@ -168,7 +168,6 @@ var setup_group_modal_view = function(app, groups_coll) {
     $('div#group-modal-form.modal-body').append(group_create_form.el);
 };
 var group_success = function group_success(groups_coll, response, options) {
-    console.log(groups_coll);
     groups_coll.each(function(group){
         var bmarks = new Bookmarks();
         bmarks.fetch({

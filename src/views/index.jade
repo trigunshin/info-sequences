@@ -35,20 +35,20 @@ block content
   script(type="text/template",id="bookmark-template").
     <div class="row">
       <div class="span1"></div>
-      <a class="span1" href="<%= url %>"><%= url %></a>
+      <a class="span6" href="<%= url %>"><%= url %></a>
       <span class='btn btn-small btn-danger bookmark__delete'>delete</span>
     </div>
 
   script(type="text/template",id="group-info-template").
     <a class="span4 accordion-toggle collapsed" data-toggle="collapse" data-parent="#groupList" href="#group<%= _id %>"><%= name %></a>
     <span id="group_remove" class="offset2 btn btn-small btn-danger">Remove Group</span>
-    <div id="remove_bookmark"></div>
 
   script(type="text/template",id="groups-layout-template").
     <br>
     <div id="group-info-view" class="accordion-heading row"></div>
     <div id="group<%= _id %>" class="accordion-body collapse" style="height: 0px;">
       <div class="accordion-inner">
+        <p><%= description %>
         <ul id="group-bookmarks" class="unstyled"></ul>
       </div>
     </div>
