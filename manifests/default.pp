@@ -1,9 +1,8 @@
-import "_utils.pp"
-
 import "ssh.pp"
 import "system-packages.pp"
 import "mongo.pp"
 import "node.pp"
+import "redis.pp"
 
 ########################################################################
 
@@ -36,6 +35,7 @@ exec { "load-screen":
     cwd => "$install_dir/info-sequences",
     command => '/usr/bin/screen -AmdS infoseq -t appjs bash',
     user => 'vagrant',
+    unless => "/usr/bin/test 1 '!=' `ps aux|grep screen|wc -l`",
     require => [
         File['/home/vagrant/.screenrc'],
         Package['screen'],
