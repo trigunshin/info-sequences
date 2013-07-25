@@ -49,3 +49,18 @@ exports.delete = function(req, res) {
         }
     );
 };
+
+exports.login = function(req, res, next) {
+    var query = {
+        email: req.param('email'),
+        pass: req.param('password')
+    };
+    console.log(query);
+    dbmux.users.get(query, function(err, user) {
+        if(err) return next(err);
+        if(query.email==='a')
+            return res.json(user);
+        else return next(new Error("fake error"));
+        //return res.json(user);
+    });
+};

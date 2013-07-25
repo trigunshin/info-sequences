@@ -1,3 +1,116 @@
+var ALoginView = Backbone.Marionette.ItemView.extend({
+    // Specifies the Underscore.js template to use.
+    template:  '#login-template',
+
+    // Properties of the DOM element that will be created/inserted by this view.
+    tagName:   'div',
+    className: 'login-area',
+
+    // Shortcut references to components within the UI.
+    ui: {
+        loginForm:           'form#login',
+        emailField:         'input[name=email]',
+        passwordField:       'input[name=password]',
+        successMessage:      '.msg-success',
+        authErrorMessage:    '.error-bad-auth',
+        generalErrorMessage: '.error-unknown',
+        loggedIn: '#user-hail'
+    },
+    // Allows us to capture when the user submits the form either via selecting
+    // the login button or typing enter in one of the input fields.
+    events: {
+        'click a#logout': 'logout',
+        'submit form#login': 'formSubmitted'
+    },
+    // Specify the model properties that we should rerender the view on.
+    modelEvents: {
+        'change:state':        'render',
+        'change:stateDetails': 'render'
+    },
+    logout: function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        this.model.set({
+            'email': '',
+            'password': ''
+        });
+        MyApp.vent.trigger('logout:click', this.model);
+    },
+    formSubmitted: function(event) {
+        // Stop the form from actually submitting to the server.
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.model.set({
+            'email': this.ui.emailField.val(),
+            'password': this.ui.passwordField.val()
+        });
+
+        // Fire off the global event for the controller so that it handles the
+        // server communication.
+        MyApp.vent.trigger('login:submit', this.model);
+    },
+    onRender: function() {
+        // This is where most of the state-dependent logic goes that used to be
+        // written as random jQuery calls. Now, since the view is rerendered on
+        // each state change, you just have to modify the DOM relative to the
+        // initial content specified in the Underscore template.
+        switch (this.model.get('state')) {
+            case this.model.notAuthState:
+                this.ui.emailField.focus();
+                break;
+            case this.model.pendingAuthState:
+                this.ui.loginForm.find('input, select, textarea').prop('disabled', true);
+                this.ui.loginForm.find('input[type=submit]').val('Logging In…');
+                break;
+            case this.model.authFailState:
+                this.ui.authErrorMessage.show();
+                this.ui.passwordField.focus();
+                break;
+            case this.model.authUnknownState:
+                this.ui.generalErrorMessage.show();
+                break;
+            case this.model.authSuccessState:
+                this.ui.successMessage.show();
+                this.ui.loggedIn.show();
+                this.ui.loginForm.hide();
+                // Insert more success logic here.
+                // For example, you could reload the page, redirect the user to a
+                // different page, or you could fire off a global event that causes
+                // the page view to switch to a different one.
+        }
+    },
+    onShow: function() {
+        // The browser can't focus on a field that's not displayed on the screen
+        // yet. This happens when the view is first shown on the screen.
+        if(this.model.notAuthState == this.model.get('state')) {
+            this.ui.emailField.focus();
+        }
+    }
+});
+//////////////
+var ALoginModel = Backbone.Model.extend({
+   defaults:{
+      email:     '',
+      password:     '',
+      state:        this.notAuthState, // This is where you set the initial state.
+      stateDetails: '',
+   },
+
+   // Define constants to represent the various states and give them descriptive
+   // values to help with debugging.
+   notAuthState:     'Not Authenticated',
+   pendingAuthState: 'Pending Authentication',
+   authSuccessState: 'Authentication Success',
+   authFailState:    'Authentication Failure',
+   authUnknownState: 'Authentication Unknown',
+})
+//////////////
+
+////////////////////
+//// actual app ////
+////////////////////
 var Bookmark = Backbone.Model.extend({
     idAttribute: '_id',
     //defaults: {url: 'default_url'},
@@ -154,7 +267,9 @@ var GroupsView = Backbone.Marionette.CollectionView.extend({
 var MyApp = new Backbone.Marionette.Application();
 MyApp.addRegions({
     group_layout: "#group_layout",
-    group_add_modal: "#add_group"
+    group_add_modal: "#add_group",
+    login_region: "#user_box"
+    //login_region: "#login_region"
 });
 var setup_group_modal_view = function(app, groups_coll) {
     var gModalView = new GroupModalView({});
@@ -191,4 +306,52 @@ MyApp.addInitializer(function(options){
         success: group_success
     });
 });
+
+
+// Login page controller.
+MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
+    var _this = this;
+    module.addInitializer(function(options) {
+        module.loginModel = new ALoginModel();
+        module.loginView = new ALoginView({
+            model: module.loginModel
+        });
+        return app.login_region.show(module.loginView);
+    });
+    // Called when the async request to the server returns a successful status.
+    module.loginSuccess = function(data) {
+        return module.loginModel.set('state', module.loginModel.authSuccessState);
+    };
+    // Called when the async request to the server returns an unsuccessful status.
+    module.loginFail = function(response) {
+        // HTTP 404 means that the user + password combo was not found.
+        // This is the "incorrect email/password" error.
+        // Any other status code indicates something unexpected happened on the
+        // server such as HTTP 418: I'm a Teapot.
+        if (404 === response.status) {
+            return module.loginModel.set('state', module.loginModel.authFailState);
+        } else {
+            module.loginModel.set('state', module.loginModel.authUnknownState);
+            return module.loginModel.set('stateDetails', 'Unexpected Server Response: ' + response.status + ' ' + response.statusText);
+        }
+    };
+
+    app.vent.on('logout:click', function(user_model) {
+        return user_model.set('state', user_model.notAuthState);
+    });
+
+    // The view fires off a global event when the form is submitted so that this
+    // controller can catch it and handle the server communication logic.
+    return app.vent.on('login:submit', function(loginModel) {
+        loginModel.set('state', loginModel.pendingAuthState);
+        return $.post('/api/auth', loginModel.toJSON()).done(function(data) {
+            return module.loginSuccess(data);
+        }).fail(function(response) {
+            return module.loginFail(response);
+        });
+    });
+});
+
+
+
 MyApp.start();

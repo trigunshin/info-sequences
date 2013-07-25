@@ -1,10 +1,27 @@
 extends layout
-
 block content
+  script#logged-in-template(type='text/template').
+    <p class="navbar-text">Welcome, <%= name%>&nbsp;
+      <a id="logout" class="btn" href="/logout">Logout</a>
+    </p>
+  script#login-template(type="text/template").
+    <div class="span5 msg-success hide label label-success">You are now logged in.</div>
+    <div class="span5 error-bad-auth hide label label-warning">Username and/or password incorrect.</div>
+    <div class="span5 error-unknown hide label label-warning"><%- stateDetails %></div>
+    <br class="span6">
+    <p id="user-hail" class="navbar-text hide">Welcome!&nbsp;
+      <a id="logout" class="btn" href="/logout">Logout</a>
+    </p>
+    <form id="login" action="#" method="post">
+      <h1>Login</h1>
+      <input name="email" type="text" value="<%- email %>">
+      <input name="password" type="password" value="<%- password %>">
+      <input type="submit" value="Log In">
+    </form>
 
   script(type="text/template",id="group-modal-template").
     <a href="#createGroupModal" role="button" class="btn" data-toggle="modal">Add Group</a>
-    <div id="createGroupModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel",aria-hidden="true">
+    <div id="createGroupModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3 id="formModalLabel">Create new group</h3>
@@ -17,7 +34,7 @@ block content
     </div>
   script(type="text/template",id="bookmark-modal-template").
     <a href="#createBookmarkModal-<%= group_id %>" role="button" class="btn" data-toggle="modal">Add Bookmark</a>
-    <div id="createBookmarkModal-<%= group_id %>" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel",aria-hidden="true">
+    <div id="createBookmarkModal-<%= group_id %>" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3 id="formModalLabel">Create new Bookmark</h3>
@@ -53,8 +70,10 @@ block content
       </div>
     </div>
   .container
-    div.row
+    //-
+      div.row
       h1= title
       p Welcome to #{title}
+    #login_region
     #add_group
     #group_layout
