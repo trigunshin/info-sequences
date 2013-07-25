@@ -38,8 +38,8 @@ app.post('/api/bookmark', bookmark.post);
 app.put('/api/bookmark/:_id', bookmark.put);
 app.delete('/api/bookmark/:_id', bookmark.delete);
 
-app.get('/api/user', user.list);
-app.get('/api/user/:_id', user.get);
+//app.get('/api/user/:_id', user.get);
+app.post('/api/auth', user.login);
 app.post('/api/user', user.post);
 app.put('/api/user/:_id', user.put);
 app.delete('/api/user/:_id', user.delete);
