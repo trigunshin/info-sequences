@@ -301,10 +301,15 @@ var group_success = function group_success(groups_coll, response, options) {
     setup_group_modal_view(MyApp, groups_coll);
 };
 MyApp.addInitializer(function(options){
+    //*
     var groups = new Groups();
-    groups.fetch({
-        success: group_success
+    MyApp.vent.on("login:success", function(user_model) {
+        console.log("logged in with user email:"+user_model.get('email'));
+        groups.fetch({
+            success: group_success
+        });
     });
+    //*/
 });
 
 
@@ -320,6 +325,7 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
     });
     // Called when the async request to the server returns a successful status.
     module.loginSuccess = function(data) {
+        app.vent.trigger('login:success', module.loginModel);
         return module.loginModel.set('state', module.loginModel.authSuccessState);
     };
     // Called when the async request to the server returns an unsuccessful status.
