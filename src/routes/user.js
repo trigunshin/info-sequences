@@ -68,3 +68,49 @@ exports.login = function(req, res, next) {
         }
     });
 };
+
+exports.signup_get = function(req, res) {
+    res.render(__dirname+"/../views/signup",
+               {'title':'Sign up for Vortex!'}
+              );
+};
+
+exports.signup_post = function(req, res) {
+    console.log("post body:"+JSON.stringify(req.body));
+    var email = req.body['email'];
+    var pass = req.body['password'];
+    var pass_conf = req.body['password_confirm'];
+    try {
+        if(pass==pass_conf) {
+            dbmux.users.getPassHash(pass, function(err, hash) {
+                if(err) {return next(err);}
+                else {
+                    var query = {email: email};
+                    dbmux.users.get(query, function(err, userResult) {
+                        if(err) {return next(err);}
+                        else if(userResult && userResult.length > 0) {
+                            throw Error("Email already exists. Please try another one or login.");
+                        } else {
+                            var userToSave = {'email':email, 'password':hash, 'createdOn':new Date()};
+                            dbmux.users.save(userToSave, function(err, saved_user) {
+                                if(err) {return next(err);}
+                                else {
+                                    req.session.name=email;
+                                    //req.session.user=userToSave;
+                                    req.session.auth=true;
+                                    //res.redirect("/");
+                                    res.json({'email': email});
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        } else {
+            return next(new Error("User passwords did not match!"));
+        }
+    } catch (e) {
+        console.log(e.message);
+        signupGet(req, res);
+    }
+};

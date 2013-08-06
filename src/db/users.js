@@ -1,18 +1,19 @@
+var bcrypt = require('bcrypt');
 var BSON = require('mongodb').BSONPure;
 var COLL = "users", DB="info_sequences";
 var getCollection = null;
 var stdlib;
 var redisClient;
 
-function setStdlib(aStdlib) {
+exports.setStdlib = function setStdlib(aStdlib) {
     stdlib = aStdlib;
 };
 
-function setRedis(aRedis) {
+exports.setRedis = function setRedis(aRedis) {
     redisClient = aRedis;
 };
 
-function setCollectionAccessor(getColl) {
+exports.setCollectionAccessor = function setCollectionAccessor(getColl) {
     getCollection = getColl(COLL, DB);
 };
 
@@ -22,6 +23,7 @@ var get = function(query, callback) {
         if(query._id) query._id = new BSON.ObjectID(query._id);
         collection.find(query, {}, function(err, results) {
             if(err) return callback(err);
+            //console.log(results.toArray);
             results.toArray(function(err, items) {
                 if(err) return callback(err);
                 callback(null, items);
@@ -67,9 +69,12 @@ exports.remove = function(query, callback) {
     });
 };
 
-exports.setCollectionAccessor = setCollectionAccessor;
+exports.getPassHash = function(pass, callback) {
+    bcrypt.genSalt(11, stdlib.errorClosure(callback, function(salt) {
+        bcrypt.hash(pass, salt, callback);
+    }));
+};
+
 exports.get = get;
 exports.save = save;
 exports.findAndUpdate = findAndUpdate;
-exports.setStdlib = setStdlib;
-exports.setRedis = setRedis;

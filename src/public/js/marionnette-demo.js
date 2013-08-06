@@ -1,19 +1,46 @@
+var SignupView = Backbone.Marionette.ItemView.extend({
+    template: '#signup-template',
+    tagName: 'div',
+    className: 'signup-area',
+    events: {
+        //'click button#signup-submit': 'signup_submit',
+        'submit form#submit_form': 'signup_submit'
+    },
+    ui: {
+        emailField:           'input[id=inputEmail]',
+        passwordField:        'input[id=inputPassword]',
+        passwordConfirmField: 'input[id=inputPassword1]',
+        successMessage:      '.msg-success.signup-label',
+        authErrorMessage:    '.error-bad-auth.signup-label',
+        generalErrorMessage: '.error-unknown.signup-label'
+    },
+    signup_submit: function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var signin_data = {
+            'email': this.ui.emailField.val(),
+            'password': this.ui.passwordField.val(),
+            'password_confirm': this.ui.passwordConfirmField.val()
+        };
+        MyApp.vent.trigger('signup:submit', signin_data);
+    }
+});
 var ALoginView = Backbone.Marionette.ItemView.extend({
     // Specifies the Underscore.js template to use.
     template:  '#login-template',
 
     // Properties of the DOM element that will be created/inserted by this view.
-    tagName:   'div',
-    className: 'login-area',
+    tagName:   'li',
+    className: 'login-area dropdown',
 
     // Shortcut references to components within the UI.
     ui: {
         loginForm:           'form#login',
-        emailField:         'input[name=email]',
+        emailField:          'input[name=email]',
         passwordField:       'input[name=password]',
-        successMessage:      '.msg-success',
-        authErrorMessage:    '.error-bad-auth',
-        generalErrorMessage: '.error-unknown',
+        successMessage:      '.msg-success.login-label',
+        authErrorMessage:    '.error-bad-auth.login-label',
+        generalErrorMessage: '.error-unknown.login-label',
         loggedIn: '#user-hail'
     },
     // Allows us to capture when the user submits the form either via selecting
@@ -32,9 +59,11 @@ var ALoginView = Backbone.Marionette.ItemView.extend({
         e.preventDefault();
 
         this.model.set({
-            'email': '',
-            'password': ''
+            email: '',
+            password: '',
+            action_name: this.model.action_login
         });
+
         MyApp.vent.trigger('logout:click', this.model);
     },
     formSubmitted: function(event) {
@@ -89,24 +118,26 @@ var ALoginView = Backbone.Marionette.ItemView.extend({
         }
     }
 });
-//////////////
 var ALoginModel = Backbone.Model.extend({
-   defaults:{
-      email:     '',
-      password:     '',
-      state:        this.notAuthState, // This is where you set the initial state.
-      stateDetails: '',
-   },
+    defaults:{
+        email:     '',
+        password:     '',
+        state:        this.notAuthState, // This is where you set the initial state.
+        stateDetails: '',
+        action_name: 'Log in'
+    },
 
-   // Define constants to represent the various states and give them descriptive
-   // values to help with debugging.
-   notAuthState:     'Not Authenticated',
-   pendingAuthState: 'Pending Authentication',
-   authSuccessState: 'Authentication Success',
-   authFailState:    'Authentication Failure',
-   authUnknownState: 'Authentication Unknown',
+    // Define constants to represent the various states and give them descriptive
+    // values to help with debugging.
+    notAuthState:     'Not Authenticated',
+    pendingAuthState: 'Pending Authentication',
+    authSuccessState: 'Authentication Success',
+    authFailState:    'Authentication Failure',
+    authUnknownState: 'Authentication Unknown',
+
+    action_login: 'Log in',
+    action_logout: 'Log out',
 })
-//////////////
 
 ////////////////////
 //// actual app ////
@@ -301,15 +332,22 @@ var group_success = function group_success(groups_coll, response, options) {
     setup_group_modal_view(MyApp, groups_coll);
 };
 MyApp.addInitializer(function(options){
-    //*
+    var signupView = new SignupView();
     var groups = new Groups();
     MyApp.vent.on("login:success", function(user_model) {
+        // TODO manage header bar links with a layout
         console.log("logged in with user email:"+user_model.get('email'));
         groups.fetch({
             success: group_success
         });
     });
-    //*/
+
+    MyApp.vent.on("logout:click", function(user_model) {
+        groups.reset();
+        MyApp.group_layout.show(signupView);
+        MyApp.group_add_modal.close();
+    });
+    MyApp.group_layout.show(signupView);
 });
 
 
@@ -325,9 +363,18 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
     });
     // Called when the async request to the server returns a successful status.
     module.loginSuccess = function(data) {
+        module.loginModel.set('action_name', module.loginModel.action_logout);
         app.vent.trigger('login:success', module.loginModel);
         return module.loginModel.set('state', module.loginModel.authSuccessState);
     };
+
+    //TODO module.signupFail; signin header warnings similar to login banners
+    module.signupFail = function(response) {
+        //TODO handle signup errors
+        //TODO link signup into states of login
+        // still need to separate the views, but share the model?
+    };
+
     // Called when the async request to the server returns an unsuccessful status.
     module.loginFail = function(response) {
         // HTTP 404 means that the user + password combo was not found.
@@ -346,6 +393,18 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
         return user_model.set('state', user_model.notAuthState);
     });
 
+    app.vent.on('signup:submit', function(signup_model) {
+        return $.post('/signup', signup_model).done(function(data) {
+            module.loginModel.set({'email': data.email});
+            console.log("login model");
+            //console.log(loginModel.toJSON());
+            console.log(module.loginModel);
+            return module.loginSuccess(data);
+        }).fail(function(response) {
+            return module.loginFail(response);
+        });
+    });
+
     // The view fires off a global event when the form is submitted so that this
     // controller can catch it and handle the server communication logic.
     return app.vent.on('login:submit', function(loginModel) {
@@ -357,7 +416,5 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
         });
     });
 });
-
-
 
 MyApp.start();
