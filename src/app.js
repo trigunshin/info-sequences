@@ -51,7 +51,6 @@ app.put('/api/group/:_id', group.put);
 app.delete('/api/group/:_id', group.delete);
 
 app.get('/', routes.index);
-app.get('/signup', user.signup_get);
 app.post('/signup', user.signup_post);
 
 http.createServer(app).listen(app.get('port'), function(){
