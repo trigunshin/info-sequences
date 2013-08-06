@@ -43,6 +43,7 @@ app.post('/api/auth', user.login);
 app.post('/api/user', user.post);
 app.put('/api/user/:_id', user.put);
 app.delete('/api/user/:_id', user.delete);
+app.post('/api/user/logout', user.logout);
 
 app.get('/api/group', group.list);
 app.get('/api/group/:_id', group.get);
@@ -50,6 +51,7 @@ app.post('/api/group', group.post);
 app.put('/api/group/:_id', group.put);
 app.delete('/api/group/:_id', group.delete);
 
+app.get('/api/whoami', user.whoami);
 app.get('/', routes.index);
 app.post('/signup', user.signup_post);
 

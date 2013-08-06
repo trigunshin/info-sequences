@@ -107,3 +107,12 @@ exports.signup_post = function(req, res) {
         signupGet(req, res);
     }
 };
+
+exports.whoami = function(req, res) {
+    res.json({email:req.session.email});
+};
+
+exports.logout = function(req, res) {
+    req.session.destroy();
+    res.json();
+};
