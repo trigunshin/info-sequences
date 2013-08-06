@@ -4,9 +4,10 @@ exports.set_dbmux = function(a_dbmux) {
 };
 
 exports.list = function(req, res) {
-    //TODO scope this to a user id, from session or otherwise
-    //var query = {user_id: req.query.user_id};
+    // TODO scope this to a user id, from session or otherwise
+    // TODO using cookie sessions for 'api call' is a bit weird
     var query = {};
+    query.email = req.session.email;
     dbmux.groups.get(query, function(err, groups) {
         if(err) throw err;
         else res.json(groups);

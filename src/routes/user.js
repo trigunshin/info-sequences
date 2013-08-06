@@ -51,21 +51,23 @@ exports.delete = function(req, res) {
 };
 
 exports.login = function(req, res, next) {
-    var query = {
-        email: req.param('email'),
-        pass: req.param('password')
-    };
-    console.log(query);
+    var query = {email: req.param('email')},
+        userPass = req.param('password');
     dbmux.users.get(query, function(err, user) {
         if(err) return next(err);
-        else if(query.email==='a')
-            return next(new Error("fake error"));
-        else {
-            var ret = {
-                'email': user.email
-            };
-            return res.json(ret);
-        }
+        dbmux.users.comparePass(userPass, user['password'], function(err, pwResult) {
+            if(err) return next(err);
+            else if(pwResult) {
+                var ret = {
+                    'email': user.email
+                };
+                req.session.email = user.email;
+                req.session.auth = true;
+                return res.json(ret);
+            } else {
+                return next(new Error("Username/password combination not found."));
+            }
+        });
     });
 };
 
@@ -88,7 +90,7 @@ exports.signup_post = function(req, res) {
                             dbmux.users.save(userToSave, function(err, saved_user) {
                                 if(err) {return next(err);}
                                 else {
-                                    req.session.name=email;
+                                    req.session.email=email;
                                     req.session.auth=true;
                                     res.json({'email': email});
                                 }

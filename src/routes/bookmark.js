@@ -4,9 +4,13 @@ exports.set_dbmux = function(a_dbmux) {
 };
 
 exports.list = function(req, res) {
-    //TODO scope this to a user id, from session or otherwise
-    //var query = {user_id: req.query.user_id};
-    var query = {group_id: req.param('group_id')};
+    // TODO scope this to a user id, from session or otherwise
+    // TODO using cookie sessions for 'api call' is a bit weird
+    var query = {
+        // TODO determine behavior if group_id not present
+        group_id: req.param('group_id'),
+        email: req.session.email
+    };
     dbmux.bookmarks.get(query, function(err, bookmarks) {
         if(err) throw err;
         else res.json(bookmarks);
