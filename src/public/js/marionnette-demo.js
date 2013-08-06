@@ -101,7 +101,7 @@ var ALoginView = Backbone.Marionette.ItemView.extend({
                 this.ui.generalErrorMessage.show();
                 break;
             case this.model.authSuccessState:
-                this.ui.successMessage.show();
+                //this.ui.successMessage.show();
                 this.ui.loggedIn.show();
                 this.ui.loginForm.hide();
                 // Insert more success logic here.
@@ -355,8 +355,19 @@ MyApp.addInitializer(function(options){
         MyApp.group_add_modal.close();
     });
     MyApp.group_layout.show(signupView);
+    $.get('/api/whoami').done(function(data) {
+        if(data.email) {
+            auth_with_email(data.email);
+        }
+    }).fail(function(response) {
+        //proceed with normal flow
+    });
 });
 
+var auth_with_email = function(module, email) {
+    MyApp.LoginPage.loginModel.set({'email': email});
+    return MyApp.LoginPage.loginSuccess({'email': email});
+};
 
 // Login page controller.
 MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
@@ -397,16 +408,16 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
     };
 
     app.vent.on('logout:click', function(user_model) {
+        $.post('/api/user/logout', {}).done(function(data) {
+        }).fail(function(response) {
+            // TODO handle error prolly
+        });
         return user_model.set('state', user_model.notAuthState);
     });
 
     app.vent.on('signup:submit', function(signup_model) {
         return $.post('/signup', signup_model).done(function(data) {
-            module.loginModel.set({'email': data.email});
-            console.log("login model");
-            //console.log(loginModel.toJSON());
-            console.log(module.loginModel);
-            return module.loginSuccess(data);
+            return auth_with_email(data.email);
         }).fail(function(response) {
             return module.loginFail(response);
         });
