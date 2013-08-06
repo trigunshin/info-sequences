@@ -23,7 +23,9 @@ exports.get = function(req, res) {
 };
 
 exports.post = function(req, res) {
-    dbmux.groups.save(req.body, function(err, updated) {
+    var toSave = req.body;
+    toSave.email = req.session.email;
+    dbmux.groups.save(toSave, function(err, updated) {
         if(err) throw err;
         res.json(updated[0]);
     });

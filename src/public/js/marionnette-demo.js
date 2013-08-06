@@ -248,6 +248,14 @@ var renderGroupLayout = function(group_layout_view) {
     var curModel = group_layout_view.model;
     var group_id = curModel.get('_id');
     var group_bookmarks = curModel.get('bookmarks');
+    // newly added groups won't have this initialized
+    if(!group_bookmarks) {
+        group_bookmarks = new Bookmarks();
+        group_bookmarks.fetch({
+            data: $.param({group_id: group_id})
+        });
+        curModel.set('bookmarks', group_bookmarks);
+    }
 
     var gView = new GroupInfoView({
         model: curModel
@@ -336,7 +344,6 @@ MyApp.addInitializer(function(options){
     var groups = new Groups();
     MyApp.vent.on("login:success", function(user_model) {
         // TODO manage header bar links with a layout
-        console.log("logged in with user email:"+user_model.get('email'));
         groups.fetch({
             success: group_success
         });

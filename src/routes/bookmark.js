@@ -26,7 +26,9 @@ exports.get = function(req, res) {
 };
 
 exports.post = function(req, res) {
-    dbmux.bookmarks.save(req.body, function(err, updated) {
+    var toSave = req.body;
+    toSave.email = req.session.email;
+    dbmux.bookmarks.save(toSave, function(err, updated) {
         if(err) throw err;
         res.json(updated[0]);
     });
