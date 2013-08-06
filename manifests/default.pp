@@ -50,5 +50,6 @@ exec { "run-app":
     user => 'vagrant',
     require => [
         Exec['load-screen'],
+        Package['g++']
     ],
 }
