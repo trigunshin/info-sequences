@@ -21,13 +21,9 @@ var get = function(query, callback) {
     getCollection(function(err, collection) {
         if(err) return callback(err);
         if(query._id) query._id = new BSON.ObjectID(query._id);
-        collection.find(query, {}, function(err, results) {
+        collection.findOne(query, {}, function(err, result) {
             if(err) return callback(err);
-            //console.log(results.toArray);
-            results.toArray(function(err, items) {
-                if(err) return callback(err);
-                callback(null, items);
-            });
+            return callback(null, result);
         });
     });
 };
@@ -72,6 +68,12 @@ exports.remove = function(query, callback) {
 exports.getPassHash = function(pass, callback) {
     bcrypt.genSalt(11, stdlib.errorClosure(callback, function(salt) {
         bcrypt.hash(pass, salt, callback);
+    }));
+};
+
+exports.comparePass = function(submitted, dbPass, callback) {
+    bcrypt.compare(submitted, dbPass, stdlib.errorClosure(callback, function(res) {
+        callback(null, res);
     }));
 };
 
