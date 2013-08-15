@@ -1,4 +1,5 @@
-include nodejs
+# this is now handled in system-packages b/c puppetmodule derps out
+# include nodejs
 
 file { '/usr/etc':
     ensure => 'directory',
@@ -15,5 +16,5 @@ File['/usr/etc/npmrc'] -> Package <| |>
 package { 'mimosa':
     ensure => 'installed',
     provider => 'npm',
-    require => Package['npm'],
+    require => [Package['nodejs'],],
 }
