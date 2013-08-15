@@ -55,7 +55,11 @@ exports.login = function(req, res, next) {
         userPass = req.param('password');
     dbmux.users.get(query, function(err, user) {
         if(err) return next(err);
-        dbmux.users.comparePass(userPass, user['password'], function(err, pwResult) {
+        else if(!user) {
+          return next(new Error("Username/password combination not found."));
+        }
+        else {
+          dbmux.users.comparePass(userPass, user['password'], function(err, pwResult) {
             if(err) return next(err);
             else if(pwResult) {
                 var ret = {
@@ -67,6 +71,7 @@ exports.login = function(req, res, next) {
             } else {
                 return next(new Error("Username/password combination not found."));
             }
+          }
         });
     });
 };
