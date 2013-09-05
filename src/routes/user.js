@@ -71,8 +71,8 @@ exports.login = function(req, res, next) {
             } else {
                 return next(new Error("Username/password combination not found."));
             }
-          }
-        });
+          });
+        }
     });
 };
 
