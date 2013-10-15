@@ -46,7 +46,7 @@ var remove_field = function(node) {
 };
 
 var ht=null;
-$(document).ready(function() {
+var open_the_gate = function() {
     ht = init(base_data);
     ht.onClick = get_on_click_decorator(ht);
     current_node = ht.graph.getNode(ht.root);
@@ -83,6 +83,9 @@ $(document).ready(function() {
         ht.refresh(true);
         e.preventDefault();
     });
+};
+$(document).ready(function() {
+
 });
 
 (function() {
@@ -198,4 +201,96 @@ function init(data){
     ht.controller.onComplete();
     return ht;
 }
+////////
+var Tree = Backbone.Model.extend({
+    idAttribute: '_id',
+    urlRoot: "/api/tree/",
+    schema: {
+        name: 'Text',
+        description: 'Text'
+    }
+});
+var Trees = Backbone.Collection.extend({
+    model: Tree,
+    url: "/api/tree/"
+});
+var TreeInfoView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+        this.listenTo(this.model, 'destroy', this.remove);
+    },
+    template: "#tree-info-template",
+    tagName: "div",
+    events: {
+        'click span#tree_remove': 'removeTree'
+    },
+    removeTree: function() {
+        console.log('removing tree w/id:'+ this.model.get('_id'));
+        this.model.destroy();
+    }
+});
+////////
+//*
+MyApp.addRegions({
+    left_pane: "#left-container.tree",
+    tree_graph: "#center-container.tree",
+    tree_details: "#right-container.tree"
+    //, log: "#log"
+});
+var setup_group_modal_view = function(app, groups_coll) {
+    var gModalView = new GroupModalView({});
+    gModalView.group_collection = groups_coll;
+    app.group_add_modal.show(gModalView);
+    var group_create_form = new Backbone.Form({
+        model: new Group({}),
+        idPrefix: 'group-'
+    }).render();
+    gModalView.group_form = group_create_form;
+    $('div#group-modal-form.modal-body').append(group_create_form.el);
 
+};
+var group_success = function group_success(groups_coll, response, options) {
+    groups_coll.each(function(group){
+        var bmarks = new Bookmarks();
+        bmarks.fetch({
+            data: $.param({group_id: group.get('_id')})
+        });
+        group.set('bookmarks', bmarks);
+    });
+    var gCollectionView = new GroupsView({
+        collection: groups_coll
+    });
+    MyApp.group_layout.show(gCollectionView);
+
+    gCollectionView.children.each(function(group_layout_view) {
+        renderGroupLayout(group_layout_view);
+    });
+    setup_group_modal_view(MyApp, groups_coll);
+};
+var tree_success = function() {
+    console.log('authed, init the tree!');
+    open_the_gate();
+};
+//*/
+MyApp.addInitializer(function(options){
+    //var signupView = new SignupView();
+    //var groups = new Groups();
+    MyApp.vent.on("login:success", function(user_model) {
+        tree_success();
+        // TODO manage header bar links with a layout
+/*
+        groups.fetch({
+            success: group_success
+        });
+//*/
+    });
+
+    MyApp.vent.on("logout:click", function(user_model) {
+        //groups.reset();
+        //MyApp.group_layout.show(signupView);
+        //MyApp.group_add_modal.close();
+    });
+
+    //MyApp.group_layout.show(signupView);
+});
+
+MyApp.start();
