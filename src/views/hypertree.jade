@@ -1,0 +1,46 @@
+extend layout
+
+block content
+  #container.tree
+    #left-container.tree
+      form#add_form
+        input(name='name', type='text', value='some_name')
+        input(name='url', type='text', value='some_url')
+        input(name='description', type='text', value='some_description')
+        input#addnode_button(type='submit', value='Add Node')
+      button#save_tree_button(type='button', value='Save Tree') Save
+
+      .text
+        h4 Tree Animation
+        | A static JSON Tree structure is used as input for this animation.
+        br
+        br
+        | Clicking on a node should move the tree and center that node.
+        br
+        br
+        | The centered node's children are displayed in a relations list in the right column.
+      #id-list
+      div(style='text-align: center;')
+            
+    #center-container.tree
+      #infovis
+    #right-container.tree
+      #inner-details
+    #log
+
+
+block scripts
+  link(type="text/css", href="/stylesheets/Hypertree.css", rel="stylesheet")
+  script(type='text/javascript', src='js/underscore-min.js')
+  script(language="javascript", type="text/javascript",src="/js/jit-yc.js")
+  script(language="javascript", type="text/javascript",src="/js/jquery-2.0.0.min.js")
+  script(type='text/javascript', src='js/json2.js')
+  script(type='text/javascript', src='js/backbone-min.js')
+  script(type='text/javascript', src='js/backbone-forms.min.js')
+  script(type='text/javascript', src='js/backbone-forms-list.min.js')
+  script(type='text/javascript', src='js/backbone-forms-bootstrap.js')
+  script(type='text/javascript', src='js/backbone-marionette.min.js')
+
+  script(type='text/javascript', src='js/bootstrap.min.js')
+  script(type='text/javascript', src='js/user_auth.js')
+  script(language="javascript",type="text/javascript",src="/js/example1.js")

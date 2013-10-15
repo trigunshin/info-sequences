@@ -21,7 +21,7 @@ var getConnection = function (collectionName, databaseName) {
 	};
 };
 
-var files = ['users', 'groups', 'bookmarks'];
+var files = ['users', 'groups', 'bookmarks', 'tree'];
 var perDBFile = function(applyToSubclass) {
     for(var i=0,iLen=files.length;i<iLen;i++) {
         var curName = files[i];
@@ -45,7 +45,7 @@ var setSubclassStdlib = function(curObj) {
 function setRedisClient(aRedis) {
     redisClient = aRedis;
     perDBFile(setSubclassRedis);
-};
+}
 
 perDBFile(loadFiles);
 perDBFile(setSubclassStdlib);

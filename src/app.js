@@ -1,16 +1,18 @@
-var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
-  , bookmark = require('./routes/bookmark')
-  , group = require('./routes/group')
-  , http = require('http')
-  , dbmux = require("./db/dbmux")
-  , path = require('path');
+var express = require('express'),
+  routes = require('./routes'),
+  idx = require('./routes/index'),
+  tree = require('./routes/tree'),
+  user = require('./routes/user'),
+  bookmark = require('./routes/bookmark'),
+  group = require('./routes/group'),
+  http = require('http'),
+  dbmux = require("./db/dbmux"),
+  path = require('path');
 
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 80);
+app.set('port', process.env.PORT || 5000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -29,8 +31,13 @@ if ('development' == app.get('env')) {
 }
 
 user.set_dbmux(dbmux);
+tree.set_dbmux(dbmux);
 group.set_dbmux(dbmux);
 bookmark.set_dbmux(dbmux);
+idx.set_dbmux(dbmux);
+
+app.get('/api/tree/:_id', tree.get);
+app.post('/api/tree', tree.post);
 
 app.get('/api/bookmark', bookmark.list);
 app.get('/api/bookmark/:_id', bookmark.get);
@@ -54,6 +61,7 @@ app.delete('/api/group/:_id', group.delete);
 app.get('/api/whoami', user.whoami);
 app.get('/', routes.index);
 app.post('/signup', user.signup_post);
+app.get('/hyper', routes.hyper);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

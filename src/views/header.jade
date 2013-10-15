@@ -12,3 +12,76 @@
             a(href="/") home
       block userbox
         ul#user_box(class="nav pull-right")
+
+script#signup-template(type='text/template').
+  <form id="submit_form" class='form-horizontal',method='post'>
+    <div class="signup-label span5 msg-success hide label label-success">Signed up!</div>
+    <div class="signup-label span5 error-bad-auth hide label label-warning">Username and/or password incorrect.</div>
+    <div class="signup-label span5 error-unknown hide label label-warning">EXPLAIN_ERROR_HERE</div>
+    <div class="control-group">
+      <label class="control-label" for="inputEmail">Email</label>
+      <div class="controls">
+        <input type="email" id="inputEmail" name="user[email]" placeholder="Email" required>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputPassword">Password</label>
+      <div class="controls">
+        <input type="password" id="inputPassword" name="user[pass]" placeholder="Password" required>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputPassword1">Confirm Password</label>
+      <div class="controls">
+        <input type="password" id="inputPassword1" name="user[pass1]" placeholder="Confirm Password" required>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        <!--
+          <label class="checkbox">
+          <input type="checkbox"> Remember me
+          </label>
+        -->
+        <button type="submit" class="btn">Sign in</button>
+      </div>
+    </div>
+  </form>
+script#logged-in-template(type='text/template').
+  <p class="navbar-text">Welcome, <%= name%>&nbsp;
+    <a id="logout" class="btn" href="/logout">Logout</a>
+  </p>
+script#login-template(type="text/template").
+  <a href="#" data-toggle="dropdown" class="dropdown-toggle"><%- action_name %></a>
+  <div class='dropdown-menu'>
+    <div class="login-label span4 msg-success hide label label-success">You are now logged in.</div>
+    <div class="login-label span4 error-bad-auth hide label label-warning">Username and/or password incorrect.</div>
+    <div class="login-label span4 error-unknown hide label label-warning"><%- stateDetails %></div>
+    <br class="span4">
+
+    <p id="user-hail" class="navbar-text hide">Welcome!&nbsp;
+      <a id="logout" class="btn" href="/logout">Logout</a>
+    </p>
+
+    <form id="login" action="#" method="post">
+    <div class="control-group">
+      <label class="control-label" for="inputEmail">Email</label>
+      <div class="controls">
+        <input type="email" id="inputEmail" name="email" class="span4" placeholder="Email" value="<%- email %>" required>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputPassword">Password</label>
+      <div class="controls">
+        <input type="password" id="inputPassword" class="span4" name="password" placeholder="Password" value="<%- password %>" required>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        <input type="submit" class="btn" value="Log In">
+      </div>
+    </div>
+    </form>
+  </div>
