@@ -1,31 +1,29 @@
 extend layout
 
 block content
+  script(type="text/template",id="tree-form-template").
+    <form id="add_form">
+      <input name="name" type="text" value="some_name"/>
+      <input name="url" type="text" value="some_url"/>
+      <input name="description" type="text" value="some_description"/>
+      <input id="addnode_button" type="submit" value="Add Node"/>
+    </form>
+    <button id="save_tree_button" type="button" value="Save Tree">Save</button>
+    <div class="text">
+      <h4>Tree Animation</h4>A static JSON Tree structure is used as input for this animation.<br/><br/>Clicking on a node should move the tree and center that node.<br/><br/>The centered node's children are displayed in a relations list in the right column.
+    </div>
+    <div id="id-list"></div>
+    <div style="text-align: center;"></div>
+  script(type="text/template",id="tree-visu-template").
+    <div id="center-container" class="tree">
+      <div id="infovis"></div>
+    </div>
+  script(type="text/template",id="tree-data-template").
+    <div id="inner-details"></div>
   #container.tree
     #left-container.tree
-      form#add_form
-        input(name='name', type='text', value='some_name')
-        input(name='url', type='text', value='some_url')
-        input(name='description', type='text', value='some_description')
-        input#addnode_button(type='submit', value='Add Node')
-      button#save_tree_button(type='button', value='Save Tree') Save
-
-      .text
-        h4 Tree Animation
-        | A static JSON Tree structure is used as input for this animation.
-        br
-        br
-        | Clicking on a node should move the tree and center that node.
-        br
-        br
-        | The centered node's children are displayed in a relations list in the right column.
-      #id-list
-      div(style='text-align: center;')
-            
-    #center-container.tree
-      #infovis
+    #tree-visu
     #right-container.tree
-      #inner-details
     #log
 
 

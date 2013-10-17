@@ -62,27 +62,6 @@ var open_the_gate = function() {
             //console.log('post succeeded w/jqxhr:' + JSON.stringify(jqXHR));
         });
     });
-    // add_node click handler
-    var incr = 0;
-    $('#add_form').submit(function(e) {
-        var form_data = $('#add_form').serializeArray();
-        var tmp = {
-            id: get_next_id(),
-            data: {},
-            children: []
-        };
-        for(var i=0,iLen=form_data.length;i<iLen;i++) {
-            if(form_data[i].name === 'name') {
-                tmp[form_data[i].name] = form_data[i].value;
-            } else {
-                tmp.data[form_data[i].name] = form_data[i].value;
-            }
-            
-        }
-        ht.graph.addAdjacence(current_node, tmp);
-        ht.refresh(true);
-        e.preventDefault();
-    });
 };
 $(document).ready(function() {
 
@@ -228,69 +207,80 @@ var TreeInfoView = Backbone.Marionette.ItemView.extend({
         this.model.destroy();
     }
 });
+
+var TreeDataView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+    },
+    tagName: "div",
+    template: "#tree-data-template"
+});
+var TreeVisuPaneView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+    },
+    tagName: "div",
+    template: "#tree-visu-template"
+});
+var TreeLeftPaneView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+        // XXX this'll clash if a new tree has been loaded
+        this.last_used_id = 0;
+    },
+    tagName: "div",
+    template: "#tree-form-template",
+    events: {
+        'click input#addnode_button': 'add_node'
+    },
+    add_node: function() {
+        //add the node!
+        var form_data = $('#add_form').serializeArray();
+        var new_id = this.last_used_id;
+        this.last_used_id += 1;
+        var tmp = {
+            id: ""+new_id,
+            data: {},
+            children: []
+        };
+        for(var i=0,iLen=form_data.length;i<iLen;i++) {
+            if(form_data[i].name === 'name') {
+                tmp[form_data[i].name] = form_data[i].value;
+            } else {
+                tmp.data[form_data[i].name] = form_data[i].value;
+            }
+        }
+        ht.graph.addAdjacence(current_node, tmp);
+        ht.refresh(true);
+        return false;
+    }
+    //*/
+});
 ////////
 //*
 MyApp.addRegions({
     left_pane: "#left-container.tree",
-    tree_graph: "#center-container.tree",
+    //tree_graph: "#center-container.tree",
+    tree_graph: "#tree-visu",
     tree_details: "#right-container.tree"
     //, log: "#log"
 });
-var setup_group_modal_view = function(app, groups_coll) {
-    var gModalView = new GroupModalView({});
-    gModalView.group_collection = groups_coll;
-    app.group_add_modal.show(gModalView);
-    var group_create_form = new Backbone.Form({
-        model: new Group({}),
-        idPrefix: 'group-'
-    }).render();
-    gModalView.group_form = group_create_form;
-    $('div#group-modal-form.modal-body').append(group_create_form.el);
-
-};
-var group_success = function group_success(groups_coll, response, options) {
-    groups_coll.each(function(group){
-        var bmarks = new Bookmarks();
-        bmarks.fetch({
-            data: $.param({group_id: group.get('_id')})
-        });
-        group.set('bookmarks', bmarks);
-    });
-    var gCollectionView = new GroupsView({
-        collection: groups_coll
-    });
-    MyApp.group_layout.show(gCollectionView);
-
-    gCollectionView.children.each(function(group_layout_view) {
-        renderGroupLayout(group_layout_view);
-    });
-    setup_group_modal_view(MyApp, groups_coll);
-};
 var tree_success = function() {
-    console.log('authed, init the tree!');
+    var left_tree_pane = new TreeLeftPaneView();
+    MyApp.left_pane.show(left_tree_pane);
+    MyApp.tree_graph.show(new TreeVisuPaneView());
+    MyApp.tree_details.show(new TreeDataView());
     open_the_gate();
 };
 //*/
 MyApp.addInitializer(function(options){
-    //var signupView = new SignupView();
-    //var groups = new Groups();
     MyApp.vent.on("login:success", function(user_model) {
         tree_success();
         // TODO manage header bar links with a layout
-/*
-        groups.fetch({
-            success: group_success
-        });
-//*/
     });
 
     MyApp.vent.on("logout:click", function(user_model) {
-        //groups.reset();
-        //MyApp.group_layout.show(signupView);
-        //MyApp.group_add_modal.close();
+        MyApp.left_pane.close();
+        MyApp.tree_graph.close();
+        MyApp.tree_details.close();
     });
-
-    //MyApp.group_layout.show(signupView);
 });
 
 MyApp.start();
