@@ -167,7 +167,6 @@ var auth_with_email = function(module, email) {
     MyApp.LoginPage.loginModel.set({'email': email});
     return MyApp.LoginPage.loginSuccess({'email': email});
 };
-
 // Login page controller.
 MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
     var _this = this;
@@ -181,8 +180,8 @@ MyApp.module('LoginPage', function(module, app, backbone, marionette, $, _) {
     // Called when the async request to the server returns a successful status.
     module.loginSuccess = function(data) {
         module.loginModel.set('action_name', module.loginModel.action_logout);
-        app.vent.trigger('login:success', module.loginModel);
-        return module.loginModel.set('state', module.loginModel.authSuccessState);
+        module.loginModel.set('state', module.loginModel.authSuccessState);
+        return app.vent.trigger('login:success', module.loginModel);
     };
 
     //TODO module.signupFail; signin header warnings similar to login banners
