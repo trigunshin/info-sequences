@@ -3,14 +3,16 @@ var base_data = {
     "name": "geb",
     "data": {
         "url": "en.wikipedia.org/wiki/Gödel,_Escher,_Bach",
-        "description": "geb description..."
+        "description": "geb description...",
+        "read": 1
     },
     "children": [{
             "id": "antifragile_id",
             "name": "antifragile",
             "data": {
                 "url": "en.wikipedia.org/wiki/Antifragile:_Things_That_Gain_from_Disorder",
-                "description": "antifragile description..."
+                "description": "antifragile description...",
+                "read": 1
             },
             "children": []
     }]
@@ -47,19 +49,23 @@ var remove_field = function(node) {
 
 var ht=null;
 var open_the_gate = function() {
-    ht = init(base_data);
-    ht.onClick = get_on_click_decorator(ht);
-    current_node = ht.graph.getNode(ht.root);
+    $.get('/api/tree', {}, function(data, textStatus, jqXHR) {
+        console.log('get succeeded w/data:'+JSON.stringify(data));
+        base_data = data.ht_data;
+        ht = init();
+        ht.onClick = get_on_click_decorator(ht);
+        current_node = ht.graph.getNode(ht.root);
 
-    // save_tree click handler
-    $('#save_tree_button').click(function(e) {
-        var ht_data = {ht_data: remove_field(ht.toJSON())};
+        // save_tree click handler
+        $('#save_tree_button').click(function(e) {
+            var ht_data = {ht_data: remove_field(ht.toJSON())};
 
-        console.log('clicked save w/data:'+JSON.stringify(ht_data));
-        $.post('/api/tree', ht_data, function(data, textStatus, jqXHR) {
-            //console.log('post succeeded w/reply:' + JSON.stringify(data));
-            //console.log('post succeeded w/textStatus:' + JSON.stringify(textStatus));
-            //console.log('post succeeded w/jqxhr:' + JSON.stringify(jqXHR));
+            console.log('clicked save w/data:'+JSON.stringify(ht_data));
+            $.post('/api/tree', ht_data, function(data, textStatus, jqXHR) {
+                console.log('post succeeded w/reply:' + JSON.stringify(data));
+                //console.log('post succeeded w/textStatus:' + JSON.stringify(textStatus));
+                //console.log('post succeeded w/jqxhr:' + JSON.stringify(jqXHR));
+            });
         });
     });
 };
@@ -83,7 +89,7 @@ $(document).ready(function() {
 
 var Log = {
   elem: false,
-  write: function(text){
+  write: function(text) {
     if (!this.elem)
       this.elem = document.getElementById('log');
     this.elem.innerHTML = text;
@@ -92,7 +98,7 @@ var Log = {
 };
 
 
-function init(data){
+function init(data) {
     var json = data;
     var infovis = document.getElementById('infovis');
     var w = infovis.offsetWidth - 50, h = infovis.offsetHeight - 50;
@@ -107,6 +113,7 @@ function init(data){
       //Change node and edge styles such as
       //color, width and dimensions.
       Node: {
+          overridable: true,
           dim: 9,
           color: "#f00"
       },
@@ -153,19 +160,28 @@ function init(data){
           style.left = (left - w / 2) + 'px';
       },
       
-      onComplete: function(){
+      onComplete: function() {
           Log.write("done");
           //Build the right column relations list.
           //This is done by collecting the information (stored in the data property) 
           //for all the nodes adjacent to the centered node.
           var node = ht.graph.getClosestNodeToOrigin("current");
+          console.log(node);
           var html = "<h4>" + node.name + "</h4><b>Connections:</b>";
           html += "<ul>";
           node.eachAdjacency(function(adj){
               var child = adj.nodeTo;
               if (child.data) {
-                  var rel = (child.data.band == node.name) ? child.data.relation : node.data.relation;
-                  html += "<li>" + child.name + " " + "<div class=\"relation\">(relation: " + rel + ")</div></li>";
+                  //var rel = (child.data.band == node.name) ? child.data.relation : node.data.relation;
+                  //html += "<li>" + child.name + " " + "<div class=\"relation\">(relation: " + rel + ")</div></li>";
+                  var was_read = (node.data.read) ? true: false;
+                  if(was_read) {
+                      child.Node.color = "#f09";
+                  }
+                  html += "<li>" + child.name + " " +
+                    "<div class=\"read\">(read: " + was_read + ")" +
+                    node.getCanvasStyle('color') +
+                    "</div></li>";
               }
           });
           html += "</ul>";
@@ -186,7 +202,8 @@ var Tree = Backbone.Model.extend({
     urlRoot: "/api/tree/",
     schema: {
         name: 'Text',
-        description: 'Text'
+        description: 'Text',
+        read: 'Text'
     }
 });
 var Trees = Backbone.Collection.extend({
@@ -237,7 +254,7 @@ var TreeLeftPaneView = Backbone.Marionette.ItemView.extend({
         this.last_used_id += 1;
         var tmp = {
             id: ""+new_id,
-            data: {},
+            data: {'read':false},
             children: []
         };
         for(var i=0,iLen=form_data.length;i<iLen;i++) {
@@ -253,34 +270,62 @@ var TreeLeftPaneView = Backbone.Marionette.ItemView.extend({
     }
     //*/
 });
+var TreeLayout = Backbone.Marionette.Layout.extend({
+    template: "#tree-layout-template",
+    regions: {
+      left_pane: "#left-container.tree",
+      //tree_graph: "#center-container.tree",
+      tree_graph: "#tree-visu.tree",
+      tree_details: "#right-container.tree"
+      //, log: "#log"
+    }
+});
 ////////
+/*
+i want:
+  a layout, initialized with 3 sections/panges
+    each pane is related to the tree flow
+    the layout is shown on user auth
+    the layout is closed/hidden on logout
+  when the user is unauth:
+    show/default to signup form
+  when the user is auth:
+    show layout w/tree data&visu
+//*/
 //*
 MyApp.addRegions({
-    left_pane: "#left-container.tree",
-    //tree_graph: "#center-container.tree",
-    tree_graph: "#tree-visu",
-    tree_details: "#right-container.tree"
-    //, log: "#log"
+  main_layout: '#container.tree'
+  //, left_pane: "#left-container.tree",
+  //tree_graph: "#tree-visu.tree",
+  //tree_details: "#right-container.tree"
+  //, log: "#log"
 });
 var tree_success = function() {
+    var tree_layout = new TreeLayout();
+    MyApp.main_layout.show(tree_layout);
+    
     var left_tree_pane = new TreeLeftPaneView();
-    MyApp.left_pane.show(left_tree_pane);
-    MyApp.tree_graph.show(new TreeVisuPaneView());
-    MyApp.tree_details.show(new TreeDataView());
+    tree_layout.left_pane.show(left_tree_pane);
+    tree_layout.tree_graph.show(new TreeVisuPaneView());
+    tree_layout.tree_details.show(new TreeDataView());
+
     open_the_gate();
 };
 //*/
 MyApp.addInitializer(function(options){
+    var signupView = new SignupView();
     MyApp.vent.on("login:success", function(user_model) {
         tree_success();
         // TODO manage header bar links with a layout
     });
 
     MyApp.vent.on("logout:click", function(user_model) {
-        MyApp.left_pane.close();
-        MyApp.tree_graph.close();
-        MyApp.tree_details.close();
+        //MyApp.left_pane.close();
+        //MyApp.tree_graph.close();
+        //MyApp.tree_details.close();
+        MyApp.main_layout.show(signupView);
     });
+    MyApp.main_layout.show(signupView);
 });
 
 MyApp.start();
