@@ -20,11 +20,17 @@ block content
     </div>
   script(type="text/template",id="tree-data-template").
     <div id="inner-details"></div>
+  script(type="text/template",id="tree-layout-template").
+    <div id="left-container" class='tree'></div>
+    <div id="tree-visu" class='tree'></div>
+    <div id="right-container" class='tree'></div>
+    <div id="log" class='tree'></div>
   #container.tree
-    #left-container.tree
-    #tree-visu
-    #right-container.tree
-    #log
+    //-
+      #left-container.tree
+      #tree-visu.tree
+      #right-container.tree
+      #log
 
 
 block scripts
