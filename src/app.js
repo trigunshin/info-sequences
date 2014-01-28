@@ -21,14 +21,13 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('fdahf7aeagiqaw2'));
 app.use(express.session());
+// development only
+//if ('development' == app.get('env')) {
+  app.use(express.errorHandler());
+//}
 app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
 app.use(express.static(path.join(__dirname, 'public')));
-
-// development only
-if ('development' == app.get('env')) {
-  app.use(express.errorHandler());
-}
 
 user.set_dbmux(dbmux);
 tree.set_dbmux(dbmux);
@@ -37,7 +36,8 @@ bookmark.set_dbmux(dbmux);
 idx.set_dbmux(dbmux);
 
 app.get('/api/tree/:_id', tree.get);
-app.post('/api/tree', tree.post);
+app.get('/api/tree', tree.get);
+app.post('/api/tree', tree.put);
 
 app.get('/api/bookmark', bookmark.list);
 app.get('/api/bookmark/:_id', bookmark.get);

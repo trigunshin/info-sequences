@@ -11,6 +11,6 @@ exports.index = function(req, res) {
 };
 
 exports.hyper = function(req, res) {
-  req.session.email='t@g.c';
+  //req.session.email='t@g.c';
   res.render('hypertree', {title: 'Hypertree!'});
 };

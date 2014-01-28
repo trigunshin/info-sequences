@@ -47,8 +47,8 @@ var findAndUpdate = function(query, fields, callback) {
         collection.findAndModify(
             query,
             [],
-            {"$set":fields},
-            {"new":true},
+            {"$set": fields},
+            {"new": true, "upsert": true},
             function(err, result) {
                 if(err) return callback(err);
                 return callback(null, result);

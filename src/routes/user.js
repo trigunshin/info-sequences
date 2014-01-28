@@ -76,7 +76,7 @@ exports.login = function(req, res, next) {
     });
 };
 
-exports.signup_post = function(req, res) {
+exports.signup_post = function(req, res, next) {
     var email = req.body['email'];
     var pass = req.body['password'];
     var pass_conf = req.body['password_confirm'];
@@ -86,11 +86,18 @@ exports.signup_post = function(req, res) {
                 if(err) {return next(err);}
                 else {
                     var query = {email: email};
+                    //console.log('signup post dupe query:'+JSON.stringify(query));
                     dbmux.users.get(query, function(err, userResult) {
                         if(err) {return next(err);}
-                        else if(userResult && userResult.length > 0) {
-                            throw Error("Email already exists. Please try another one or login.");
+                        else if(userResult && (userResult.length > 0 || userResult.email)) {
+                            return next(new Error("Email already exists. Please try another one or login."));
                         } else {
+                            //console.log('signup post query result:'+JSON.stringify(userResult));
+                            if(userResult.email) {
+                            //    console.log('email ducktyped to true');
+                            }
+                            //console.log('signup post query result?:'+(userResult.email));
+                            //console.log('signup post query result.len:'+(userResult.length));
                             var userToSave = {'email':email, 'password':hash, 'createdOn':new Date()};
                             dbmux.users.save(userToSave, function(err, saved_user) {
                                 if(err) {return next(err);}

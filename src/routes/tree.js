@@ -15,7 +15,11 @@ exports.list = function(req, res) {
 };
 
 exports.get = function(req, res) {
-    var query = {_id: req.param('_id')};
+    var query = {'email': req.session.email};
+    var my_id = req.param('_id');
+    if(my_id) {
+        query['_id'] = my_id;
+    }
     dbmux.tree.get(query, function(err, group) {
         if(err) throw err;
         else res.json(group);
@@ -32,7 +36,11 @@ exports.post = function(req, res) {
 };
 
 exports.put = function(req, res) {
-    var query = {_id: req.param('_id')};
+    var query = {'email': req.session.email};
+    var my_id = req.param('_id');
+    if(my_id) {
+        query['_id'] = my_id;
+    }
     dbmux.tree.findAndUpdate(
         query,
         req.body,
