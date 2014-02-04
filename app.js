@@ -1,12 +1,12 @@
 var express = require('express'),
-  routes = require('./routes'),
-  idx = require('./routes/index'),
-  tree = require('./routes/tree'),
-  user = require('./routes/user'),
-  bookmark = require('./routes/bookmark'),
-  group = require('./routes/group'),
+  routes = require('./src/routes'),
+  idx = require('./src/routes/index'),
+  tree = require('./src/routes/tree'),
+  user = require('./src/routes/user'),
+  bookmark = require('./src/routes/bookmark'),
+  group = require('./src/routes/group'),
   http = require('http'),
-  dbmux = require("./db/dbmux"),
+  dbmux = require("./src/db/dbmux"),
   path = require('path');
 
 var app = express();
