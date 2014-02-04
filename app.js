@@ -1,19 +1,18 @@
 var express = require('express'),
-  routes = require('./routes'),
-  idx = require('./routes/index'),
-  tree = require('./routes/tree'),
-  user = require('./routes/user'),
-  bookmark = require('./routes/bookmark'),
-  group = require('./routes/group'),
+  routes = require('./src/routes'),
+  idx = require('./src/routes/index'),
+  tree = require('./src/routes/tree'),
+  user = require('./src/routes/user'),
+  bookmark = require('./src/routes/bookmark'),
+  group = require('./src/routes/group'),
   http = require('http'),
-  dbmux = require("./db/dbmux"),
+  dbmux = require("./src/db/dbmux"),
   path = require('path');
 
 var app = express();
-
 // all environments
 app.set('port', process.env.PORT || 5000);
-app.set('views', __dirname + '/views');
+app.set('views', path.join(__dirname, '/src/views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
@@ -26,8 +25,8 @@ app.use(express.session());
   app.use(express.errorHandler());
 //}
 app.use(app.router);
-app.use(require('stylus').middleware(__dirname + '/public'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(require('stylus').middleware(path.join(__dirname, '/src/public')));
+app.use(express.static(path.join(__dirname, '/src/public')));
 
 user.set_dbmux(dbmux);
 tree.set_dbmux(dbmux);
@@ -59,7 +58,7 @@ app.put('/api/group/:_id', group.put);
 app.delete('/api/group/:_id', group.delete);
 
 app.get('/api/whoami', user.whoami);
-app.get('/', routes.index);
+app.get('/', idx.index);
 app.post('/signup', user.signup_post);
 app.get('/hyper', routes.hyper);
 
