@@ -1,7 +1,9 @@
 var Db = require('mongodb').Db,
+  MongoClient = require('mongodb').MongoClient;
   Server = require('mongodb').Server;
-var SERVER = process.env.MONGO_HOST || "localhost",
+var SERVER = process.env.MONGO_HOST || process.env.MONGOLAB_URI || "localhost",
     PORT = process.env.MONGO_PORT || 27017;
+// FIXME this will look funny when using mongolab
 console.log("DBMux connecting to mongo @ host&port:"+SERVER+":"+PORT);
 var stdlib = require("../stdlib").stdlib;
 var redisClient;
@@ -12,8 +14,14 @@ var getConnection = function (collectionName, databaseName) {
 	return function(cb) {
 		if(cache[key]) return cb(null, cache[key]);
 
-		var dbObject = new Db(databaseName, new Server(SERVER, PORT, {"auto_reconnect":true}),{"safe":false});
-		dbObject.open(stdlib.errorClosure(cb, function(openedDB) {
+        var mongo_url = null;
+        if(process.env.MONGOLAB_URI) {
+            mongo_url = process.env.MONGOLAB_URI;
+        } else {
+            mongo_url = 'mongodb://' + SERVER + ":" + PORT + "/" + databaseName;
+        }
+
+        MongoClient.connect(mongo_url, stdlib.errorClosure(cb, function(openedDB) {
 			openedDB.collection(collectionName, stdlib.errorClosure(cb, function(opened) {
 				cb(null, cache[key] = opened);
 			}));
