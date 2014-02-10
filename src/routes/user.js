@@ -92,12 +92,6 @@ exports.signup_post = function(req, res, next) {
                         else if(userResult && (userResult.length > 0 || userResult.email)) {
                             return next(new Error("Email already exists. Please try another one or login."));
                         } else {
-                            //console.log('signup post query result:'+JSON.stringify(userResult));
-                            if(userResult.email) {
-                            //    console.log('email ducktyped to true');
-                            }
-                            //console.log('signup post query result?:'+(userResult.email));
-                            //console.log('signup post query result.len:'+(userResult.length));
                             var userToSave = {'email':email, 'password':hash, 'createdOn':new Date()};
                             dbmux.users.save(userToSave, function(err, saved_user) {
                                 if(err) {return next(err);}
